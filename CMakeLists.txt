@@ -31,6 +31,7 @@ target_sources(AdditiveSynth PRIVATE
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp
     Source/SineWave.cpp
+    Source/Square.cpp
 )
 
 target_compile_definitions(AdditiveSynth PUBLIC

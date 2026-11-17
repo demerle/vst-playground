@@ -8,6 +8,8 @@ AdditiveSynthAudioProcessorEditor::AdditiveSynthAudioProcessorEditor (AdditiveSy
     titleLabel.setJustificationType (juce::Justification::centred);
     addAndMakeVisible (titleLabel);
 
+    addAndMakeVisible (square);
+
     setSize (400, 300);
 }
 
@@ -19,4 +21,7 @@ void AdditiveSynthAudioProcessorEditor::paint (juce::Graphics& g)
 void AdditiveSynthAudioProcessorEditor::resized()
 {
     titleLabel.setBounds (getLocalBounds().removeFromTop (40));
+
+    square.setBounds(100,100, 200,200);
 }
+
