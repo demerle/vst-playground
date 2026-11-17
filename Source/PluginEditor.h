@@ -16,7 +16,9 @@ public:
 private:
     AdditiveSynthAudioProcessor& processorRef;
     juce::Label titleLabel;
-    Square square;
+    juce::Slider frequencySlider;
+    juce::TextButton playButton;
+    juce::Label frequencyLabel {"FrequencyLabel", "Frequency"};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AdditiveSynthAudioProcessorEditor)
 };
