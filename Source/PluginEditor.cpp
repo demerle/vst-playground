@@ -51,11 +51,8 @@ AdditiveSynthAudioProcessorEditor::AdditiveSynthAudioProcessorEditor (AdditiveSy
     sinePresetButton.onClick     = [this] { applyPreset ([] (int k) { return k == 1 ? 1.0f : 0.0f; }); };
     sawPresetButton.onClick      = [this] { applyPreset ([] (int k) { return 1.0f / static_cast<float>(k); }); };
     squarePresetButton.onClick   = [this] { applyPreset ([] (int k) { return k % 2 == 1 ? 1.0f / static_cast<float>(k) : 0.0f; }); };
-    // A true triangle also flips the sign of every other odd harmonic; that only changes
-    // the shape on a scope, not what you hear, so the amplitudes alone are enough here
-    trianglePresetButton.onClick = [this] { applyPreset ([] (int k) { return k % 2 == 1 ? 1.0f / static_cast<float>(k * k) : 0.0f; }); };
 
-    for (auto* button : { &sinePresetButton, &sawPresetButton, &squarePresetButton, &trianglePresetButton })
+    for (auto* button : { &sinePresetButton, &sawPresetButton, &squarePresetButton })
         addAndMakeVisible(button);
 
     setSize (800, 400);
@@ -88,8 +85,8 @@ void AdditiveSynthAudioProcessorEditor::resized()
     // Preset buttons along the bottom
     auto presetRow = area.removeFromBottom(30);
     area.removeFromBottom(10);
-    const int presetWidth = presetRow.getWidth() / 4;
-    for (auto* button : { &sinePresetButton, &sawPresetButton, &squarePresetButton, &trianglePresetButton })
+    const int presetWidth = presetRow.getWidth() / 3;
+    for (auto* button : { &sinePresetButton, &sawPresetButton, &squarePresetButton })
         button->setBounds(presetRow.removeFromLeft(presetWidth).reduced(4, 0));
 
     // Frequency and Play on the left

@@ -36,7 +36,6 @@ private:
     juce::TextButton sinePresetButton {"Sine"};
     juce::TextButton sawPresetButton {"Saw"};
     juce::TextButton squarePresetButton {"Square"};
-    juce::TextButton trianglePresetButton {"Triangle"};
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AdditiveSynthAudioProcessorEditor)
