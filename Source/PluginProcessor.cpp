@@ -3,17 +3,18 @@
 
 AdditiveSynthAudioProcessor::AdditiveSynthAudioProcessor()
     : AudioProcessor (BusesProperties()
-        .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
         .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
         ), state(*this, nullptr, "parameters", createParameters())
 {
+    playSoundParam = state.getRawParameterValue("playSound");
+    frequencyParam = state.getRawParameterValue("freqHz");
+    for (int k = 1; k <= SineWaveEngine::numHarmonics; ++k)
+        harmonicParams[static_cast<size_t>(k)] = state.getRawParameterValue(harmonicParamId(k));
 }
 
 void AdditiveSynthAudioProcessor::prepareToPlay (double sampleRate, int /*samplesPerBlock*/)
 {
-    sineWave.prepare(sampleRate, getTotalNumOutputChannels());
-    playSoundParam = state.getRawParameterValue("playSound");
-    frequencyParam = state.getRawParameterValue("freqHz");
+    sineWaveEngine.prepare(sampleRate);
 }
 
 void AdditiveSynthAudioProcessor::releaseResources() {}
@@ -29,21 +30,17 @@ void AdditiveSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer
 
     midiMessages.clear();
 
-    for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
-        juce::FloatVectorOperations::fill (buffer.getWritePointer (channel), 0.0f, buffer.getNumSamples());
+    // Gain is smoothed inside the engine, so toggling Play fades instead of clicking
+    const bool playSound = playSoundParam->load() > 0.5f;
+    sineWaveEngine.setGain(playSound ? 1.0f : 0.0f);
 
-    // Buffer was zeroed above, so returning early outputs silence
-    const bool playSound = static_cast<bool>(playSoundParam->load());
-    if (playSound)
-        sineWave.setAmplitude(0.4f);
-    else {
-        sineWave.setAmplitude(0.0f);
-    }
+    sineWaveEngine.setFrequency(frequencyParam->load());
 
-    const float freq = frequencyParam->load();
-    sineWave.setFrequency(freq);
+    for (int k = 1; k <= SineWaveEngine::numHarmonics; ++k)
+        sineWaveEngine.setHarmonicAmp(k, harmonicParams[static_cast<size_t>(k)]->load());
 
-    sineWave.process(buffer);
+    // The engine writes every sample of every channel, so the buffer doesn't need clearing first
+    sineWaveEngine.process(buffer);
 }
 
 juce::AudioProcessorEditor* AdditiveSynthAudioProcessor::createEditor()
@@ -65,8 +62,18 @@ void AdditiveSynthAudioProcessor::setCurrentProgram (int) {}
 const juce::String AdditiveSynthAudioProcessor::getProgramName (int) { return {}; }
 void AdditiveSynthAudioProcessor::changeProgramName (int, const juce::String&) {}
 
-void AdditiveSynthAudioProcessor::getStateInformation (juce::MemoryBlock&) {}
-void AdditiveSynthAudioProcessor::setStateInformation (const void*, int) {}
+void AdditiveSynthAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+{
+    if (auto xml = state.copyState().createXml())
+        copyXmlToBinary (*xml, destData);
+}
+
+void AdditiveSynthAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+{
+    if (auto xml = getXmlFromBinary (data, sizeInBytes))
+        if (xml->hasTagName (state.state.getType()))
+            state.replaceState (juce::ValueTree::fromXml (*xml));
+}
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
@@ -75,8 +82,20 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 
 juce::AudioProcessorValueTreeState::ParameterLayout AdditiveSynthAudioProcessor::createParameters()
 {
-    return {
-        std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {"freqHz"}, "Frequency", 20.0f, 20000.0f, 220.0f),
-        std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"playSound"}, "Play Sound", false)
-    };
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+    // Skewed so more slider travel goes to low notes, where there's room for many harmonics
+    juce::NormalisableRange<float> freqRange (20.0f, 2000.0f);
+    freqRange.setSkewForCentre (220.0f);
+
+    layout.add (std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {"freqHz", 1}, "Frequency", freqRange, 220.0f));
+    layout.add (std::make_unique<juce::AudioParameterBool>(juce::ParameterID {"playSound", 1}, "Play Sound", false));
+
+    for (int k = 1; k <= SineWaveEngine::numHarmonics; ++k)
+        layout.add (std::make_unique<juce::AudioParameterFloat>(
+            juce::ParameterID {harmonicParamId(k), 1},
+            "Harmonic " + juce::String(k),
+            0.0f, 1.0f, k == 1 ? 1.0f : 0.0f));
+
+    return layout;
 }

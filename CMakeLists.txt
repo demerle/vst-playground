@@ -30,8 +30,7 @@ juce_add_plugin(AdditiveSynth
 target_sources(AdditiveSynth PRIVATE
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp
-    Source/SineWave.cpp
-    Source/Square.cpp
+    Source/SineWaveEngine.cpp
 )
 
 target_compile_definitions(AdditiveSynth PUBLIC

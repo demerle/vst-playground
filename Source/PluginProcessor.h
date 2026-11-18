@@ -1,7 +1,7 @@
 #pragma once
 
 #include <juce_audio_utils/juce_audio_utils.h>
-#include "SineWave.h"
+#include "SineWaveEngine.h"
 
 class AdditiveSynthAudioProcessor : public juce::AudioProcessor
 {
@@ -32,14 +32,16 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     juce::AudioProcessorValueTreeState& getState() { return state; }
+    static juce::String harmonicParamId(int k) { return "h" + juce::String(k); }
 
 private:
     //double currentSampleRate = 0.0;
-    SineWave sineWave;
+    SineWaveEngine sineWaveEngine;
     juce::AudioProcessorValueTreeState state;
-    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
-    std::atomic<float>* frequencyParam;
-    std::atomic<float>* playSoundParam;
+    static juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
+    std::atomic<float>* frequencyParam = nullptr;
+    std::atomic<float>* playSoundParam = nullptr;
+    std::array<std::atomic<float>*, SineWaveEngine::numHarmonics + 1> harmonicParams {}; // index 0 unused
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AdditiveSynthAudioProcessor)
 };
