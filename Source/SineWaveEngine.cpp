@@ -41,6 +41,9 @@ void SineWaveEngine::process(juce::AudioBuffer<float>& buffer)
 
     for (int sample = 0; sample < buffer.getNumSamples(); ++sample) {
         const double frequency = smoothedFreq.getNextValue();
+
+        //its just a min function with various type handling etc
+        //This finds how many harmonics are able to play without going over nyquist / breaking the sound.
         const int maxHarmonic = juce::jmin(numHarmonics, static_cast<int>(nyquist / frequency));
 
         float value = 0.0f;
