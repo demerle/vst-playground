@@ -20,5 +20,10 @@ private:
     juce::TextButton playButton;
     juce::Label frequencyLabel {"FrequencyLabel", "Frequency"};
 
+    juce::AudioProcessorValueTreeState::SliderAttachment freqSliderAttachment;
+
+    juce::AudioProcessorValueTreeState::ButtonAttachment playButtonAttachment;
+
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AdditiveSynthAudioProcessorEditor)
 };

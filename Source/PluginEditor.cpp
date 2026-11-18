@@ -1,7 +1,8 @@
 #include "PluginEditor.h"
 
 AdditiveSynthAudioProcessorEditor::AdditiveSynthAudioProcessorEditor (AdditiveSynthAudioProcessor& p)
-    : AudioProcessorEditor (&p), processorRef (p)
+    : AudioProcessorEditor (&p), processorRef (p), freqSliderAttachment(processorRef.getState(), "freqHz", frequencySlider),
+    playButtonAttachment(processorRef.getState(), "playSound", playButton)
 {
     titleLabel.setText ("Overtone Additive Synth", juce::dontSendNotification);
     titleLabel.setFont (juce::FontOptions (18.0f, juce::Font::bold));
@@ -10,12 +11,12 @@ AdditiveSynthAudioProcessorEditor::AdditiveSynthAudioProcessorEditor (AdditiveSy
 
     frequencySlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
     frequencySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 50, 25);
-    frequencySlider.setRange(0.0f, 1.0f, 0.01f);
+    //frequencySlider.setRange(0.0f, 1.0f, 0.01f);
     addAndMakeVisible(frequencySlider);
 
 
     playButton.setButtonText("Play");
-    playButton.setToggleState(false, juce::NotificationType::dontSendNotification);
+    //playButton.setToggleState(false, juce::NotificationType::dontSendNotification);
     playButton.setClickingTogglesState(true);
     playButton.setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colours::red);
     playButton.setColour(juce::TextButton::ColourIds::buttonColourId, juce::Colours::green);
@@ -49,4 +50,3 @@ void AdditiveSynthAudioProcessorEditor::resized()
     frequencyLabel.setBounds(getWidth() / 2 - 150, getHeight() / 2 - 150, 100, 20);
 
 }
-
